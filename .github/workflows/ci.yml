@@ -1,0 +1,36 @@
+name: Ejecutar Pruebas
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build:
+    runs-one: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+      name: Checkout repository
+
+    - name: Set up Python 3.x
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.x'
+
+    - name: Install dependencies
+      run: |
+        python -m venv venv
+        source venv/bin/activate
+        pip install -r requirements.txt
+
+    - name: Run Behave Tests
+      run: |
+        source venv/bin/activate
+        behave features
+
+    - name: Run Pytest Unit Tests
+      run: |
+        source venv/bin/activate
+        pytest tests
