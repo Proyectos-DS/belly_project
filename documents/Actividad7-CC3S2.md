@@ -588,9 +588,37 @@ Vemos que se ejecutaron exitosamente:
 3. **Valida** que el sistema lance una excepción o error si se ingresa una cantidad negativa de pepinos.
 
 
+He modificado el método `comer()` de la clase `Belly` para que cumpla la condición pedida
+```python
+    def comer(self, pepinos):
+        if pepinos < 0:
+            raise ValueError("Cantidad de pepinos invalida. No se permiten pepinos negativos.")
+        print(f"He comido {pepinos} pepinos.")
+        self.pepinos_comidos += pepinos
+```
+
+Al agregar este escenario en `belly.feature`
+```gherkin
+    Escenario: Comer una cantidad fraccionaria de pepinos
+    Dado que he comido -8 pepinos
+    Cuando espero "treinta minutos y 40 segundos"
+    Entonces mi estómago no debería gruñir
+```
+
+Vemos que lanza la excepción: 
+![[Pasted image 20250424184328.png]]
+
+
 4. **Pruebas unitarias**:  
    - Cubre el caso de pepinos fraccionarios en `test_belly.py`.
    - Cubre también el caso de pepinos negativos (se espera un error).
+
+
+He creado el archivo ``test_belly.py`` para definir las pruebas unitarias para la clase `Belly`
+
+```python
+
+```
 
 
 ---
