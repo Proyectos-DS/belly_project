@@ -16,7 +16,9 @@ def convertir_palabra_a_numero(palabra):
         }
         return numeros.get(palabra.lower(), 0)
 
-@given('que he comido {cukes:d} pepinos')
+# Se cambia el tipo de datos recibido en 'cukes' para que maneje datos de tipo flotantes
+# Usar {cukes:f} me da errores
+@given('que he comido {cukes:g} pepinos')
 def step_given_eaten_cukes(context, cukes):
     context.belly.comer(cukes)
 
