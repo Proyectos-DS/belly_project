@@ -554,9 +554,36 @@ Escenario: Comer una cantidad fraccionaria de pepinos
 
 1. **Modifica** el sistema (la clase `Belly` y los steps en Behave) para que acepte entradas como `"0.5"`, `"2.75"`.
 
+```python
+# Se cambia el tipo de datos recibido en 'cukes' para que maneje datos de tipo flotantes
+# Usar {cukes:f} me da errores
+@given('que he comido {cukes:g} pepinos')
+def step_given_eaten_cukes(context, cukes):
+    context.belly.comer(cukes)
+```
+
 
 2. **Implementa** un nuevo escenario en Gherkin donde se ingiera una cantidad fraccionaria y verifica el comportamiento.
 
+He agregado dos escenarios para validar que se puede ingerir una cantidad fraccionaria de pepinos.
+
+```gherkin
+  Escenario: Comer una cantidad fraccionaria de pepinos
+    Dado que he comido 0.5 pepinos
+    Cuando espero 2 horas
+    Entonces mi estómago no debería gruñir
+
+  Escenario: Comer una cantidad fraccionaria de pepinos
+
+    Dado que he comido 2.75 pepinos
+    Cuando espero "treinta minutos y 40 segundos"
+    Entonces mi estómago no debería gruñir
+
+```
+
+Vemos que se ejecutaron exitosamente: 
+
+![[Pasted image 20250424153010.png]]
 
 3. **Valida** que el sistema lance una excepción o error si se ingresa una cantidad negativa de pepinos.
 

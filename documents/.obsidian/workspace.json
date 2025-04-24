@@ -78,7 +78,8 @@
       }
     ],
     "direction": "horizontal",
-    "width": 300
+    "width": 300,
+    "collapsed": true
   },
   "right": {
     "id": "1d1559f329ee6eb1",
@@ -170,7 +171,11 @@
   },
   "active": "9402a9af22367997",
   "lastOpenFiles": [
+    "Pasted image 20250424153010.png",
     "Pasted image 20250423224743.png",
+    "Actividad7-CC3S2.md",
+    "Pasted image 20250424152831.png",
+    "Pasted image 20250424152934.png",
     "Pasted image 20250423222954.png",
     "Pasted image 20250423222433.png"
   ]
