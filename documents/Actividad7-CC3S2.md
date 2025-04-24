@@ -379,19 +379,96 @@ Escenario: Comer pepinos y esperar en minutos y segundos
 
 ---
 
-1. **Modifica** la función que maneja el tiempo de espera en `steps.py` (o donde parsees el tiempo) para que acepte:
-   - "1 hora y 30 minutos"
-   - "90 minutos"
-   - "3600 segundos"
-   - **Variaciones** que incluyan segundos (por ejemplo, `"1 hora, 30 minutos y 45 segundos"`).
+1. **Modifica**:
 
+Método `step_when_wait_time_description` para capturar los segundos: 
+
+```python
+@when('espero {time_description}')
+def step_when_wait_time_description(context, time_description):
+    time_description = time_description.strip('"').lower()
+    time_description = time_description.replace('y', ' ')
+    time_description = time_description.strip()
+
+    # Manejar casos especiales como 'media hora'
+    if time_description == 'media hora':
+        total_time_in_hours = 0.5
+    else:
+        # Expresión regular para extraer horas y minutos, ahora agregamos tambien segundos
+        pattern = re.compile(r'(?:(\w+)\s*horas?)?\s*(?:(\w+)\s*minutos?)?\s*(?:(\w+)\s*segundos?)?')
+        match = pattern.match(time_description)
+
+        if match:
+            hours_word = match.group(1) or "0"
+            minutes_word = match.group(2) or "0" 
+            seconds_word = match.group(3) or "0" # Agregamos el caso para segundos
+
+            hours = convertir_palabra_a_numero(hours_word)
+            minutes = convertir_palabra_a_numero(minutes_word)
+            seconds = convertir_palabra_a_numero(seconds_word) # Obtenemos el valor numerico de los segundos
+
+            total_time_in_hours = hours + (minutes / 60) + (seconds / 3600) # Añadimos el calculo de segundos
+        else:
+            raise ValueError(f"No se pudo interpretar la descripción del tiempo: {time_description}")
+
+    context.belly.esperar(total_time_in_hours)
+```
 
 
 2. **Implementa** un escenario de prueba en Gherkin (`belly.feature`) que valide que el estómago gruñe o no según estas variaciones de tiempo.
 
+Escenario añadido a `belly.feature`:
+
+```gherkin
+  Escenario: Comer pepinos y esperar en minutos y segundos
+    Dado que he comido 35 pepinos
+    Cuando espero "1 hora y 30 minutos y 45 segundos"
+    Entonces mi estómago debería gruñir
+```
+
+Observamos que el escenario paso la prueba Behave
+
+![[Pasted image 20250423222433.png]]
 
 
 3. **Considera** también crear pruebas unitarias con Pytest para la lógica de parsing (función que convierte el texto de tiempo en horas decimales).
+
+He creado la primera prueba unitaria del proyecto: `test_belly_steps.py`
+
+```python
+import pytest
+import sys
+import os
+
+base_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+print("Base dir:", base_dir)
+sys.path.insert(0, os.path.join(base_dir, 'src'))
+sys.path.insert(0, os.path.join(base_dir, 'features'))
+from belly import Belly
+from steps.belly_steps import step_when_wait_time_description
+
+class Context:
+    """Esta clase me ayuda a simular el contexto de Behave
+    """
+    def __init__(self):
+        self.belly = None
+
+def test_step_when_time_description():
+    """Test para la función step_when_wait_time_description
+    """
+    time_description1 = "2 horas y 30 minutos y 20 segundos"
+    
+    context = Context()
+    context.belly = Belly()
+    step_when_wait_time_description(context, time_description1)
+    
+    assert context.belly.tiempo_esperado == (2 + (30 / 60) + (20 / 3600))
+```
+
+
+Observamos que la prueba se ejecuto correctamente:
+
+![[Pasted image 20250423222954.png]]
 
 
 4. **En un entorno DevOps**:
