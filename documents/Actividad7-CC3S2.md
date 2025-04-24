@@ -377,6 +377,30 @@ Escenario: Comer pepinos y esperar en minutos y segundos
 ```
 
 
+---
+
+1. **Modifica** la función que maneja el tiempo de espera en `steps.py` (o donde parsees el tiempo) para que acepte:
+   - "1 hora y 30 minutos"
+   - "90 minutos"
+   - "3600 segundos"
+   - **Variaciones** que incluyan segundos (por ejemplo, `"1 hora, 30 minutos y 45 segundos"`).
+
+
+
+2. **Implementa** un escenario de prueba en Gherkin (`belly.feature`) que valide que el estómago gruñe o no según estas variaciones de tiempo.
+
+
+
+3. **Considera** también crear pruebas unitarias con Pytest para la lógica de parsing (función que convierte el texto de tiempo en horas decimales).
+
+
+4. **En un entorno DevOps**:
+   - Agrega la ejecución de `behave` y `pytest` en tu *pipeline* de CI/CD, de modo que al hacer push de los cambios se ejecuten automáticamente las pruebas.
+
+
+---
+
+
 #### Ejercicio 2: **Manejo de cantidades fraccionarias de pepinos**
 
 **Objetivo**  
