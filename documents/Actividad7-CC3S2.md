@@ -550,6 +550,23 @@ Escenario: Comer una cantidad fraccionaria de pepinos
 - Configura notificaciones (por correo/Slack/Teams) si alguna de las pruebas falla.
 
 
+---
+
+1. **Modifica** el sistema (la clase `Belly` y los steps en Behave) para que acepte entradas como `"0.5"`, `"2.75"`.
+
+
+2. **Implementa** un nuevo escenario en Gherkin donde se ingiera una cantidad fraccionaria y verifica el comportamiento.
+
+
+3. **Valida** que el sistema lance una excepción o error si se ingresa una cantidad negativa de pepinos.
+
+
+4. **Pruebas unitarias**:  
+   - Cubre el caso de pepinos fraccionarios en `test_belly.py`.
+   - Cubre también el caso de pepinos negativos (se espera un error).
+
+
+---
 #### Ejercicio 3: **Soporte para idiomas múltiples (Español e Inglés)**
 
 **Objetivo**  
