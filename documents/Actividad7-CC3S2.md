@@ -474,6 +474,52 @@ Observamos que la prueba se ejecuto correctamente:
 4. **En un entorno DevOps**:
    - Agrega la ejecución de `behave` y `pytest` en tu *pipeline* de CI/CD, de modo que al hacer push de los cambios se ejecuten automáticamente las pruebas.
 
+Presento mi archivo `ci.yml`:
+
+```yml
+name: Ejecutar Pruebas
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build:
+    runs-one: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+      name: Checkout repository
+
+    - name: Set up Python 3.x
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.x'
+
+    - name: Install dependencies
+      run: |
+        python -m venv venv
+        source venv/bin/activate
+        pip install -r requirements.txt
+
+    - name: Run Behave Tests
+      run: |
+        source venv/bin/activate
+        behave features
+
+    - name: Run Pytest Unit Tests
+      run: |
+        source venv/bin/activate
+        pytest tests
+```
+
+
+El pipeline se ejecuto correctamente (en el segundo intento):
+
+![[Pasted image 20250423224743.png]]
+
 
 ---
 
