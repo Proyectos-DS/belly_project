@@ -757,8 +757,49 @@ Podemos observar que se ejecutaron con éxito:
 
 Esto ya lo implementé en el paso 1.
 
-4. **En un pipeline DevOps**, podrías:
-   - Dividir los escenarios en distintos *tags* (`@spanish`, `@english`) y ejecutar cada conjunto en etapas diferentes, o en paralelo.
+4. **En un pipeline DevOps**,
+
+A continuación muestro las modificaciones que hice:
+
+He agregado etiquetas en cada escenario:
+
+```gherkin
+  @spanish
+  Escenario: Comer una cantidad fraccionaria de pepinos
+    Dado que he comido 2.75 pepinos
+    Cuando espero "treinta minutos y 40 segundos"
+    Entonces mi estómago no debería gruñir
+
+  @english
+  Escenario: Esperar usando horas en inglés
+    Dado que he comido 20 pepinos
+    Cuando espero "two hours and thirty minutes"
+    Entonces mi estómago debería gruñir
+```
+
+Referencia: [Tutorial 11: Use Tags — behave 1.2.6.1: Examples and Tutorials](https://behave.github.io/behave.example/tutorials/tutorial11.html)
+
+![[Pasted image 20250424223149.png]]
+
+![[Pasted image 20250424223211.png]]
+
+
+Y se modifico el archivo `ci.yml` para ejecutar `behave` por tipo de escenario
+
+```yml
+# ---
+    - name: Run Behave Tests Spanish
+      run: |
+        source venv/bin/activate
+        behave --tags=@spanish
+
+    - name: Run Behave Tests English
+      run: |
+        source venv/bin/activate
+        behave --tags=@english
+# --
+```
+
 
 
 ----

@@ -78,7 +78,8 @@
       }
     ],
     "direction": "horizontal",
-    "width": 300
+    "width": 300,
+    "collapsed": true
   },
   "right": {
     "id": "1d1559f329ee6eb1",
@@ -170,6 +171,8 @@
   },
   "active": "9402a9af22367997",
   "lastOpenFiles": [
+    "Pasted image 20250424223211.png",
+    "Pasted image 20250424223149.png",
     "Pasted image 20250424192943.png",
     "Pasted image 20250424184328.png",
     "Pasted image 20250424153010.png",
