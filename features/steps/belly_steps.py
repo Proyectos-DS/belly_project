@@ -6,7 +6,7 @@ def convertir_palabra_a_numero(palabra):
     try:
         return int(palabra)
     except ValueError:
-        numeros = {
+        numerosa_castellano = {
             "cero": 0, "uno": 1, "una":1, "dos": 2, "tres": 3, "cuatro": 4, "cinco": 5,
             "seis": 6, "siete": 7, "ocho": 8, "nueve": 9, "diez": 10, "once": 11,
             "doce": 12, "trece": 13, "catorce": 14, "quince": 15, "dieciséis": 16,
@@ -14,7 +14,24 @@ def convertir_palabra_a_numero(palabra):
             "treinta": 30, "cuarenta":40, "cincuenta":50, "sesenta":60, "setenta":70,
             "ochenta":80, "noventa":90, "media": 0.5
         }
-        return numeros.get(palabra.lower(), 0)
+        
+        numeros_english = {
+            "zero": 0, "one": 1, "a": 1, "two": 2, "three": 3, "four": 4, "five": 5,
+            "six": 6, "seven": 7, "eight": 8, "nine": 9, "ten": 10, "eleven": 11,
+            "twelve": 12, "thirteen": 13, "fourteen": 14, "fifteen": 15, "sixteen": 16,
+            "seventeen": 17, "eighteen": 18, "nineteen": 19, "twenty": 20,
+            "thirty": 30, "forty": 40, "fifty": 50, "sixty": 60, "seventy": 70,
+            "eighty": 80, "ninety": 90, "half": 0.5
+        }
+
+        
+        palabra = palabra.lower()
+        if palabra in numerosa_castellano:
+            return numerosa_castellano[palabra]
+        elif palabra in numeros_english:
+            return numeros_english[palabra]
+        else:
+            raise ValueError(f"No se puede convertir la palabra '{palabra}' a un numero")
 
 # Se cambia el tipo de datos recibido en 'cukes' para que maneje datos de tipo flotantes
 # Usar {cukes:f} me da errores
@@ -25,15 +42,17 @@ def step_given_eaten_cukes(context, cukes):
 @when('espero {time_description}')
 def step_when_wait_time_description(context, time_description):
     time_description = time_description.strip('"').lower()
-    time_description = time_description.replace('y', ' ')
+    # Agregamos un espacio antes de 'y' para que no capture palabas como 'thirty'
+    # Y añadimos la conversión de 'and' a vacío
+    time_description = time_description.replace(' y', ' ').replace('and', ' ')
     time_description = time_description.strip()
 
     # Manejar casos especiales como 'media hora'
     if time_description == 'media hora':
         total_time_in_hours = 0.5
     else:
-        # Expresión regular para extraer horas y minutos, ahora agregamos tambien segundos
-        pattern = re.compile(r'(?:(\w+)\s*horas?)?\s*(?:(\w+)\s*minutos?)?\s*(?:(\w+)\s*segundos?)?')
+        # Mejoramos la expresion regular para que contemple palabras en ingles
+        pattern = re.compile(r'(?:(\w+)\s*(?:horas?|hours?))?\s*(?:(\w+)\s*(?:minutos?|minutes?)?)?\s*(?:(\w+)\s*(?:segundos?|seconds?)?)?')
         match = pattern.match(time_description)
 
         if match:
