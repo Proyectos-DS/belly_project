@@ -377,6 +377,153 @@ Escenario: Comer pepinos y esperar en minutos y segundos
 ```
 
 
+---
+
+1. **Modifica**:
+
+Método `step_when_wait_time_description` para capturar los segundos: 
+
+```python
+@when('espero {time_description}')
+def step_when_wait_time_description(context, time_description):
+    time_description = time_description.strip('"').lower()
+    time_description = time_description.replace('y', ' ')
+    time_description = time_description.strip()
+
+    # Manejar casos especiales como 'media hora'
+    if time_description == 'media hora':
+        total_time_in_hours = 0.5
+    else:
+        # Expresión regular para extraer horas y minutos, ahora agregamos tambien segundos
+        pattern = re.compile(r'(?:(\w+)\s*horas?)?\s*(?:(\w+)\s*minutos?)?\s*(?:(\w+)\s*segundos?)?')
+        match = pattern.match(time_description)
+
+        if match:
+            hours_word = match.group(1) or "0"
+            minutes_word = match.group(2) or "0" 
+            seconds_word = match.group(3) or "0" # Agregamos el caso para segundos
+
+            hours = convertir_palabra_a_numero(hours_word)
+            minutes = convertir_palabra_a_numero(minutes_word)
+            seconds = convertir_palabra_a_numero(seconds_word) # Obtenemos el valor numerico de los segundos
+
+            total_time_in_hours = hours + (minutes / 60) + (seconds / 3600) # Añadimos el calculo de segundos
+        else:
+            raise ValueError(f"No se pudo interpretar la descripción del tiempo: {time_description}")
+
+    context.belly.esperar(total_time_in_hours)
+```
+
+
+2. **Implementa** un escenario de prueba en Gherkin (`belly.feature`) que valide que el estómago gruñe o no según estas variaciones de tiempo.
+
+Escenario añadido a `belly.feature`:
+
+```gherkin
+  Escenario: Comer pepinos y esperar en minutos y segundos
+    Dado que he comido 35 pepinos
+    Cuando espero "1 hora y 30 minutos y 45 segundos"
+    Entonces mi estómago debería gruñir
+```
+
+Observamos que el escenario paso la prueba Behave
+
+![[Pasted image 20250423222433.png]]
+
+
+3. **Considera** también crear pruebas unitarias con Pytest para la lógica de parsing (función que convierte el texto de tiempo en horas decimales).
+
+He creado la primera prueba unitaria del proyecto: `test_belly_steps.py`
+
+```python
+import pytest
+import sys
+import os
+
+base_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+print("Base dir:", base_dir)
+sys.path.insert(0, os.path.join(base_dir, 'src'))
+sys.path.insert(0, os.path.join(base_dir, 'features'))
+from belly import Belly
+from steps.belly_steps import step_when_wait_time_description
+
+class Context:
+    """Esta clase me ayuda a simular el contexto de Behave
+    """
+    def __init__(self):
+        self.belly = None
+
+def test_step_when_time_description():
+    """Test para la función step_when_wait_time_description
+    """
+    time_description1 = "2 horas y 30 minutos y 20 segundos"
+    
+    context = Context()
+    context.belly = Belly()
+    step_when_wait_time_description(context, time_description1)
+    
+    assert context.belly.tiempo_esperado == (2 + (30 / 60) + (20 / 3600))
+```
+
+
+Observamos que la prueba se ejecuto correctamente:
+
+![[Pasted image 20250423222954.png]]
+
+
+4. **En un entorno DevOps**:
+   - Agrega la ejecución de `behave` y `pytest` en tu *pipeline* de CI/CD, de modo que al hacer push de los cambios se ejecuten automáticamente las pruebas.
+
+Presento mi archivo `ci.yml`:
+
+```yml
+name: Ejecutar Pruebas
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build:
+    runs-one: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+      name: Checkout repository
+
+    - name: Set up Python 3.x
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.x'
+
+    - name: Install dependencies
+      run: |
+        python -m venv venv
+        source venv/bin/activate
+        pip install -r requirements.txt
+
+    - name: Run Behave Tests
+      run: |
+        source venv/bin/activate
+        behave features
+
+    - name: Run Pytest Unit Tests
+      run: |
+        source venv/bin/activate
+        pytest tests
+```
+
+
+El pipeline se ejecuto correctamente (en el segundo intento):
+
+![[Pasted image 20250423224743.png]]
+
+
+---
+
+
 #### Ejercicio 2: **Manejo de cantidades fraccionarias de pepinos**
 
 **Objetivo**  
@@ -403,6 +550,104 @@ Escenario: Comer una cantidad fraccionaria de pepinos
 - Configura notificaciones (por correo/Slack/Teams) si alguna de las pruebas falla.
 
 
+---
+
+1. **Modifica** el sistema (la clase `Belly` y los steps en Behave) para que acepte entradas como `"0.5"`, `"2.75"`.
+
+```python
+# Se cambia el tipo de datos recibido en 'cukes' para que maneje datos de tipo flotantes
+# Usar {cukes:f} me da errores
+@given('que he comido {cukes:g} pepinos')
+def step_given_eaten_cukes(context, cukes):
+    context.belly.comer(cukes)
+```
+
+
+2. **Implementa** un nuevo escenario en Gherkin donde se ingiera una cantidad fraccionaria y verifica el comportamiento.
+
+He agregado dos escenarios para validar que se puede ingerir una cantidad fraccionaria de pepinos.
+
+```gherkin
+  Escenario: Comer una cantidad fraccionaria de pepinos
+    Dado que he comido 0.5 pepinos
+    Cuando espero 2 horas
+    Entonces mi estómago no debería gruñir
+
+  Escenario: Comer una cantidad fraccionaria de pepinos
+
+    Dado que he comido 2.75 pepinos
+    Cuando espero "treinta minutos y 40 segundos"
+    Entonces mi estómago no debería gruñir
+
+```
+
+Vemos que se ejecutaron exitosamente: 
+
+![[Pasted image 20250424153010.png]]
+
+3. **Valida** que el sistema lance una excepción o error si se ingresa una cantidad negativa de pepinos.
+
+
+He modificado el método `comer()` de la clase `Belly` para que cumpla la condición pedida
+```python
+    def comer(self, pepinos):
+        if pepinos < 0:
+            raise ValueError("Cantidad de pepinos invalida. No se permiten pepinos negativos.")
+        print(f"He comido {pepinos} pepinos.")
+        self.pepinos_comidos += pepinos
+```
+
+Al agregar este escenario en `belly.feature`
+```gherkin
+    Escenario: Comer una cantidad fraccionaria de pepinos
+    Dado que he comido -8 pepinos
+    Cuando espero "treinta minutos y 40 segundos"
+    Entonces mi estómago no debería gruñir
+```
+
+Vemos que lanza la excepción: 
+![[Pasted image 20250424184328.png]]
+
+
+4. **Pruebas unitarias**:  
+   - Cubre el caso de pepinos fraccionarios en `test_belly.py`.
+   - Cubre también el caso de pepinos negativos (se espera un error).
+
+
+He creado el archivo ``test_belly.py`` para definir las pruebas unitarias para la clase `Belly`
+
+```python
+import pytest
+import sys
+import os
+
+base_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+print("Base dir:", base_dir)
+sys.path.insert(0, os.path.join(base_dir, 'src'))
+sys.path.insert(0, os.path.join(base_dir, 'features'))
+from belly import Belly
+
+
+def test_comer_pepinos_fraccionarios():
+    """Test que verifica que se pueden comer pepinos fraccionarios.
+    """
+    belly = Belly()
+    belly.comer(1.5)
+    assert belly.pepinos_comidos == 1.5
+
+
+def test_comer_peninos_negativos():
+    """Test que valida que efectivamente no se pueden comer pepinos negativos.
+    Se espera una excepción de tipo ValueError
+    """
+    belly = Belly()
+    with pytest.raises(ValueError) as excinfo:
+        belly.comer(-5)
+    assert str(excinfo.value) == "Cantidad de pepinos invalida. No se permiten pepinos negativos."
+```
+
+
+---
 #### Ejercicio 3: **Soporte para idiomas múltiples (Español e Inglés)**
 
 **Objetivo**  
@@ -424,6 +669,99 @@ Escenario: Esperar usando horas en inglés
 ```
 
 
+----
+
+1. **Modifica** el parsing de tiempo para que reconozca palabras clave en inglés, además de español (por ejemplo, `"two hours"`, `"thirty minutes"`).
+
+He modificado el método `convertir_palabra_a_numero` de `belly_steps.py` para soportar palabras en inglés.
+```python
+# Función para convertir palabras numéricas a números
+def convertir_palabra_a_numero(palabra):
+    try:
+        return int(palabra)
+    except ValueError:
+        numerosa_castellano = {
+            "cero": 0, "uno": 1, "una":1, "dos": 2, "tres": 3, "cuatro": 4, "cinco": 5,
+            "seis": 6, "siete": 7, "ocho": 8, "nueve": 9, "diez": 10, "once": 11,
+            "doce": 12, "trece": 13, "catorce": 14, "quince": 15, "dieciséis": 16,
+            "diecisiete":17, "dieciocho":18, "diecinueve":19, "veinte":20,
+            "treinta": 30, "cuarenta":40, "cincuenta":50, "sesenta":60, "setenta":70,
+            "ochenta":80, "noventa":90, "media": 0.5
+        }
+        
+        numeros_english = {
+            "zero": 0, "one": 1, "a": 1, "two": 2, "three": 3, "four": 4, "five": 5,
+            "six": 6, "seven": 7, "eight": 8, "nine": 9, "ten": 10, "eleven": 11,
+            "twelve": 12, "thirteen": 13, "fourteen": 14, "fifteen": 15, "sixteen": 16,
+            "seventeen": 17, "eighteen": 18, "nineteen": 19, "twenty": 20,
+            "thirty": 30, "forty": 40, "fifty": 50, "sixty": 60, "seventy": 70,
+            "eighty": 80, "ninety": 90, "half": 0.5
+        }
+
+        
+        palabra = palabra.lower()
+        if palabra in numerosa_castellano:
+            return numerosa_castellano[palabra]
+        elif palabra in numeros_english:
+            return numeros_english[palabra]
+        else:
+            raise ValueError(f"No se puede convertir la palabra '{palabra}' a un numero")
+
+
+```
+
+Hecho esto, modifico el método `step_when_wait_time_description` para que el regex capture palabras numéricas en ingles.
+
+```python
+
+@when('espero {time_description}')
+def step_when_wait_time_description(context, time_description):
+    time_description = time_description.strip('"').lower()
+    # Agregamos un espacio antes de 'y' para que no capture palabas como 'thirty'
+    # Y añadimos la conversión de 'and' a vacío
+    time_description = time_description.replace(' y', ' ').replace('and', ' ')
+    time_description = time_description.strip()
+
+    # Manejar casos especiales como 'media hora'
+    if time_description == 'media hora':
+        total_time_in_hours = 0.5
+    else:
+        # Mejoramos la expresion regular para que contemple palabras en ingles
+        pattern = re.compile(r'(?:(\w+)\s*(?:horas?|hours?))?\s*(?:(\w+)\s*(?:minutos?|minutes?)?)?\s*(?:(\w+)\s*(?:segundos?|seconds?)?)?')
+        match = pattern.match(time_description)
+# Las demás líneas no se modificaron ...
+```
+
+2. **Escribe** al menos dos escenarios de prueba en Gherkin que usen tiempos en inglés.
+
+Estos son los dos escenarios que agregué:
+
+```gherkin
+  Escenario: Esperar usando horas en inglés
+    Dado que he comido 20 pepinos
+    Cuando espero "two hours and thirty minutes"
+    Entonces mi estómago debería gruñir
+
+  Escenario: Esperar usando horas en ingles segundo ejemplo
+    Dado que he comido 12.5 pepinos
+    Cuando espero "90 minutes and 50 seconds"
+    Entonces mi estómago debería gruñir
+```
+
+Podemos observar que se ejecutaron con éxito:
+
+
+![[Pasted image 20250424192943.png]]
+
+3. **Implementa** una función que convierta las palabras en inglés a valores numéricos (similar a la que se usa para el español).
+
+Esto ya lo implementé en el paso 1.
+
+4. **En un pipeline DevOps**, podrías:
+   - Dividir los escenarios en distintos *tags* (`@spanish`, `@english`) y ejecutar cada conjunto en etapas diferentes, o en paralelo.
+
+
+----
 #### Ejercicio 4: **Manejo de tiempos aleatorios**
 
 **Objetivo**  
