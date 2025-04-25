@@ -25,10 +25,15 @@ jobs:
         source venv/bin/activate
         pip install -r requirements.txt
 
-    - name: Run Behave Tests
+    - name: Run Behave Tests Spanish
       run: |
         source venv/bin/activate
-        behave features
+        behave --tags=@spanish
+
+    - name: Run Behave Tests English
+      run: |
+        source venv/bin/activate
+        behave --tags=@english
 
     - name: Run Pytest Unit Tests
       run: |
