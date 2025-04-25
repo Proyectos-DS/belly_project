@@ -669,6 +669,99 @@ Escenario: Esperar usando horas en inglés
 ```
 
 
+----
+
+1. **Modifica** el parsing de tiempo para que reconozca palabras clave en inglés, además de español (por ejemplo, `"two hours"`, `"thirty minutes"`).
+
+He modificado el método `convertir_palabra_a_numero` de `belly_steps.py` para soportar palabras en inglés.
+```python
+# Función para convertir palabras numéricas a números
+def convertir_palabra_a_numero(palabra):
+    try:
+        return int(palabra)
+    except ValueError:
+        numerosa_castellano = {
+            "cero": 0, "uno": 1, "una":1, "dos": 2, "tres": 3, "cuatro": 4, "cinco": 5,
+            "seis": 6, "siete": 7, "ocho": 8, "nueve": 9, "diez": 10, "once": 11,
+            "doce": 12, "trece": 13, "catorce": 14, "quince": 15, "dieciséis": 16,
+            "diecisiete":17, "dieciocho":18, "diecinueve":19, "veinte":20,
+            "treinta": 30, "cuarenta":40, "cincuenta":50, "sesenta":60, "setenta":70,
+            "ochenta":80, "noventa":90, "media": 0.5
+        }
+        
+        numeros_english = {
+            "zero": 0, "one": 1, "a": 1, "two": 2, "three": 3, "four": 4, "five": 5,
+            "six": 6, "seven": 7, "eight": 8, "nine": 9, "ten": 10, "eleven": 11,
+            "twelve": 12, "thirteen": 13, "fourteen": 14, "fifteen": 15, "sixteen": 16,
+            "seventeen": 17, "eighteen": 18, "nineteen": 19, "twenty": 20,
+            "thirty": 30, "forty": 40, "fifty": 50, "sixty": 60, "seventy": 70,
+            "eighty": 80, "ninety": 90, "half": 0.5
+        }
+
+        
+        palabra = palabra.lower()
+        if palabra in numerosa_castellano:
+            return numerosa_castellano[palabra]
+        elif palabra in numeros_english:
+            return numeros_english[palabra]
+        else:
+            raise ValueError(f"No se puede convertir la palabra '{palabra}' a un numero")
+
+
+```
+
+Hecho esto, modifico el método `step_when_wait_time_description` para que el regex capture palabras numéricas en ingles.
+
+```python
+
+@when('espero {time_description}')
+def step_when_wait_time_description(context, time_description):
+    time_description = time_description.strip('"').lower()
+    # Agregamos un espacio antes de 'y' para que no capture palabas como 'thirty'
+    # Y añadimos la conversión de 'and' a vacío
+    time_description = time_description.replace(' y', ' ').replace('and', ' ')
+    time_description = time_description.strip()
+
+    # Manejar casos especiales como 'media hora'
+    if time_description == 'media hora':
+        total_time_in_hours = 0.5
+    else:
+        # Mejoramos la expresion regular para que contemple palabras en ingles
+        pattern = re.compile(r'(?:(\w+)\s*(?:horas?|hours?))?\s*(?:(\w+)\s*(?:minutos?|minutes?)?)?\s*(?:(\w+)\s*(?:segundos?|seconds?)?)?')
+        match = pattern.match(time_description)
+# Las demás líneas no se modificaron ...
+```
+
+2. **Escribe** al menos dos escenarios de prueba en Gherkin que usen tiempos en inglés.
+
+Estos son los dos escenarios que agregué:
+
+```gherkin
+  Escenario: Esperar usando horas en inglés
+    Dado que he comido 20 pepinos
+    Cuando espero "two hours and thirty minutes"
+    Entonces mi estómago debería gruñir
+
+  Escenario: Esperar usando horas en ingles segundo ejemplo
+    Dado que he comido 12.5 pepinos
+    Cuando espero "90 minutes and 50 seconds"
+    Entonces mi estómago debería gruñir
+```
+
+Podemos observar que se ejecutaron con éxito:
+
+
+![[Pasted image 20250424192943.png]]
+
+3. **Implementa** una función que convierta las palabras en inglés a valores numéricos (similar a la que se usa para el español).
+
+Esto ya lo implementé en el paso 1.
+
+4. **En un pipeline DevOps**, podrías:
+   - Dividir los escenarios en distintos *tags* (`@spanish`, `@english`) y ejecutar cada conjunto en etapas diferentes, o en paralelo.
+
+
+----
 #### Ejercicio 4: **Manejo de tiempos aleatorios**
 
 **Objetivo**  
