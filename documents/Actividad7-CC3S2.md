@@ -825,6 +825,87 @@ Escenario: Comer pepinos y esperar un tiempo aleatorio
 ```
 
 
+---
+1. **Crea** 
+
+Se ha creado la función `obtener_tiempo_aleatorio` para que cumpla el punto 1.
+
+```python
+def obtener_tiempo_aleatorio(expresion):
+    # entre 1 y 3 horas
+    pattern = re.compile(r'entre\s+(\d+)\s+y\s+(\d+)\s+horas')
+    match = pattern.match(expresion)
+    if match and match.group(1) and match.group(2):
+        min_hours = int(match.group(1))
+        max_hours = int(match.group(2))
+        random_hour = random.uniform(min_hours, max_hours)
+        print(f"Tiempo aleatorio en horas entre {min_hours} y {max_hours}: {random_hour}")
+        return random_hour
+    else:
+        raise ValueError(f"Hay un error al evaluar {expresion}")
+```
+
+
+
+2. **Implementa** un escenario en Gherkin.
+
+Se ha añadido el escenario que contempla ingresar una expresión que describa un "rango" para producir un tiempo esperado aleatorio:
+
+```gherkin
+  @spanish
+  Escenario: Esperar usando un tiempo aleatorio
+    Dado que he comido 12.5 pepinos
+    Cuando espero "entre 2 y 4 horas"
+    Entonces mi estómago debería gruñir
+```
+
+
+![[Pasted image 20250426111231.png]]
+
+
+3. **Imprime** (en consola o logs) el tiempo aleatorio elegido para que el resultado sea rastreable en tu pipeline.
+
+La linea:
+```python
+print(f"Tiempo aleatorio en horas entre {min_hours} y {max_hours}: 
+```
+
+Ya se encuentra en el método `obtener_tiempo_aleatorio`.
+
+**A su vez, he añadido un test unitario para validar el tiempo aleatorio**
+
+```python
+def test_step_when_time_description_aleatorio():
+    """Test para la función step_when_wait_time_description
+    para cuando se ingrese una expresión 'entre a y b horas'
+    """
+    time_description = "entre 1 y 4 horas"
+    context = Context()
+    context.belly = Belly()
+    step_when_wait_time_description(context, time_description)
+    
+    assert 1 <= context.belly.tiempo_esperado <= 4
+```
+
+
+4. **En un pipeline DevOps**:  
+   - Considera utilizar un *seed* de aleatoriedad fijo para evitar *flakiness* (tests intermitentes).  
+
+He añadido estas líneas que fijan una semilla para el random, antes de que se ejecuten los Test de Behave:
+
+```yml
+    - name: Set random seed to avoid flakiness
+      run: |
+        python -c "import random; random.seed(28)"
+
+    - name: Run Behave Tests Spanish
+```
+
+
+
+----
+
+
 #### Ejercicio 5: **Validación de cantidades no válidas**
 
 **Objetivo**  
