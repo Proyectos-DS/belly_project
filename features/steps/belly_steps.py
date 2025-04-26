@@ -43,7 +43,7 @@ def obtener_tiempo_aleatorio(expresion):
     if match and match.group(1) and match.group(2):
         min_hours = int(match.group(1))
         max_hours = int(match.group(2))
-        random_hour = random.uniform(min_hours, max_hours)
+        random_hour = round(random.uniform(min_hours, max_hours), 2)
         print(f"Tiempo aleatorio en horas entre {min_hours} y {max_hours}: {random_hour}")
         return random_hour
     else:
