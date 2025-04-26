@@ -3,3 +3,9 @@ act9/
 
 # tests
 __pycache__/
+
+# Archivo para pruebas internas
+prueba.py
+
+# Obsidian
+documents/.obsidian/
