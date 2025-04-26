@@ -26,5 +26,16 @@ def test_step_when_time_description():
     
     assert context.belly.tiempo_esperado == (2 + (30 / 60) + (20 / 3600))
     
+def test_step_when_time_description_aleatorio():
+    """Test para la función step_when_wait_time_description
+    para cuando se ingrese una expresión 'entre a y b horas'
+    """
+    time_description = "entre 1 y 4 horas"
+    context = Context()
+    context.belly = Belly()
+    step_when_wait_time_description(context, time_description)
+    
+    assert 1 <= context.belly.tiempo_esperado <= 4
+    
     
 
