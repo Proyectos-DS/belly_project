@@ -1,5 +1,6 @@
 from behave import given, when, then
 import re
+import random
 
 # Función para convertir palabras numéricas a números
 def convertir_palabra_a_numero(palabra):
@@ -33,6 +34,22 @@ def convertir_palabra_a_numero(palabra):
         else:
             raise ValueError(f"No se puede convertir la palabra '{palabra}' a un numero")
 
+
+
+def obtener_tiempo_aleatorio(expresion):
+    # entre 1 y 3 horas
+    pattern = re.compile(r'entre\s+(\d+)\s+y\s+(\d+)\s+horas')
+    match = pattern.match(expresion)
+    if match and match.group(1) and match.group(2):
+        min_hours = int(match.group(1))
+        max_hours = int(match.group(2))
+        random_hour = random.uniform(min_hours, max_hours)
+        print(f"Tiempo aleatorio en horas entre {min_hours} y {max_hours}: {random_hour}")
+        return random_hour
+    else:
+        raise ValueError(f"Hay un error al evaluar {expresion}")
+
+
 # Se cambia el tipo de datos recibido en 'cukes' para que maneje datos de tipo flotantes
 # Usar {cukes:f} me da errores
 @given('que he comido {cukes:g} pepinos')
@@ -42,34 +59,41 @@ def step_given_eaten_cukes(context, cukes):
 @when('espero {time_description}')
 def step_when_wait_time_description(context, time_description):
     time_description = time_description.strip('"').lower()
-    # Agregamos un espacio antes de 'y' para que no capture palabas como 'thirty'
-    # Y añadimos la conversión de 'and' a vacío
-    time_description = time_description.replace(' y', ' ').replace('and', ' ')
-    time_description = time_description.strip()
+    if time_description.startswith('entre'):
+        try:
+            random_hour = obtener_tiempo_aleatorio(time_description)
+            context.belly.esperar(random_hour)
+        except ValueError as err:
+            print(err)
+    else: 
+        # Agregamos un espacio antes de 'y' para que no capture palabas como 'thirty'
+        # Y añadimos la conversión de 'and' a vacío
+        time_description = time_description.replace(' y', ' ').replace('and', ' ')
+        time_description = time_description.strip()
 
-    # Manejar casos especiales como 'media hora'
-    if time_description == 'media hora':
-        total_time_in_hours = 0.5
-    else:
-        # Mejoramos la expresion regular para que contemple palabras en ingles
-        pattern = re.compile(r'(?:(\w+)\s*(?:horas?|hours?))?\s*(?:(\w+)\s*(?:minutos?|minutes?)?)?\s*(?:(\w+)\s*(?:segundos?|seconds?)?)?')
-        match = pattern.match(time_description)
-
-        if match:
-            hours_word = match.group(1) or "0"
-            minutes_word = match.group(2) or "0" 
-            seconds_word = match.group(3) or "0" # Agregamos el caso para segundos
-
-            hours = convertir_palabra_a_numero(hours_word)
-            minutes = convertir_palabra_a_numero(minutes_word)
-            seconds = convertir_palabra_a_numero(seconds_word) # Obtenemos el valor numerico de los segundos
-
-            total_time_in_hours = hours + (minutes / 60) + (seconds / 3600) # Añadimos el calculo de segundos
+        # Manejar casos especiales como 'media hora'
+        if time_description == 'media hora':
+            total_time_in_hours = 0.5
         else:
-            raise ValueError(f"No se pudo interpretar la descripción del tiempo: {time_description}")
+            # Mejoramos la expresion regular para que contemple palabras en ingles
+            pattern = re.compile(r'(?:(\w+)\s*(?:horas?|hours?))?\s*(?:(\w+)\s*(?:minutos?|minutes?)?)?\s*(?:(\w+)\s*(?:segundos?|seconds?)?)?')
+            match = pattern.match(time_description)
 
-    context.belly.esperar(total_time_in_hours)
+            if match:
+                hours_word = match.group(1) or "0"
+                minutes_word = match.group(2) or "0" 
+                seconds_word = match.group(3) or "0" # Agregamos el caso para segundos
 
+                hours = convertir_palabra_a_numero(hours_word)
+                minutes = convertir_palabra_a_numero(minutes_word)
+                seconds = convertir_palabra_a_numero(seconds_word) # Obtenemos el valor numerico de los segundos
+
+                total_time_in_hours = hours + (minutes / 60) + (seconds / 3600) # Añadimos el calculo de segundos
+                    
+            else:
+                raise ValueError(f"No se pudo interpretar la descripción del tiempo: {time_description}")
+        context.belly.esperar(total_time_in_hours)
+            
 @then('mi estómago debería gruñir')
 def step_then_belly_should_growl(context):
     assert context.belly.esta_gruñendo(), "Se esperaba que el estómago gruñera, pero no lo hizo."
