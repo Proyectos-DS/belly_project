@@ -901,6 +901,19 @@ He añadido estas líneas que fijan una semilla para el random, antes de que se 
     - name: Run Behave Tests Spanish
 ```
 
+Al hacer push a mi repo, se ejecuto el pipeline exitosamente. 
+
+![[Pasted image 20250426120452.png]]
+
+Sin embargo, no pude observar que numero aleatorio arrojo, por lo que edite el archivo `ci.yml` nuevamente:
+
+```yml
+    - name: Run Pytest Unit Tests
+      run: |
+        source venv/bin/activate
+        pytest -v --capture=no
+```
+
 
 
 ----
