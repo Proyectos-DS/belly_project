@@ -25,6 +25,10 @@ jobs:
         source venv/bin/activate
         pip install -r requirements.txt
 
+    - name: Set random seed to avoid flakiness
+      run: |
+        python -c "import random; random.seed(28)"
+
     - name: Run Behave Tests Spanish
       run: |
         source venv/bin/activate
