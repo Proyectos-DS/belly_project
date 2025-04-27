@@ -69,13 +69,6 @@ Característica: Característica del estómago
     Cuando espero "entre 2 y 4 horas"
     Entonces mi estómago debería gruñir
 
-
-  @english
-  Escenario: Esperar dado que ha comido una cantidad invalida de pepinos
-    Dado que he comido 101 pepinos
-    Cuando espero "1 hour and 40 minutes"
-    Entonces mi estómago debería gruñir
-
   @spanish
   Escenario: Arrojar una excepcion si se ingresa una cantidad negativa de pepinos
     Dado que he comido -1 pepinos

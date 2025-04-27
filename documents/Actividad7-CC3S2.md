@@ -998,7 +998,7 @@ Observo que me sale la excepción:
 
 <img src="Pasted image 20250427114026.png" >
 
-A continuación añadiré los escenarios necesarios
+A continuación añadiré los escenarios necesarios (el escenario anterior se eliminará)
 
 ```gherkin
   @spanish
