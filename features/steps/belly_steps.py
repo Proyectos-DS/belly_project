@@ -54,7 +54,12 @@ def obtener_tiempo_aleatorio(expresion):
 # Usar {cukes:f} me da errores
 @given('que he comido {cukes:g} pepinos')
 def step_given_eaten_cukes(context, cukes):
-    context.belly.comer(cukes)
+    try: # Si se ingresa una cantidad valida
+        context.belly.comer(cukes)
+        context.error_occurred = False
+    except ValueError as err: # Si se ingresa una cantidad invalida
+        context.error_occurred = True
+        context.error_message = str(err)
 
 @when('espero {time_description}')
 def step_when_wait_time_description(context, time_description):
@@ -102,3 +107,15 @@ def step_then_belly_should_growl(context):
 def step_then_belly_should_not_growl(context):
     assert not context.belly.esta_gruñendo(), "Se esperaba que el estómago no gruñera, pero lo hizo."
 
+@then('debería ocurrir un error de cantidad negativa de pepinos')
+def step_then_invalid_amount_cukes_negative(context):
+    assert context.error_occurred is True
+    assert "No se permite una cantidad negativa de pepinos" in context.error_message
+
+@then('debería ocurrir un error de cantidad mayor a 100')
+def step_then_invalid_amount_cukes_negative(context):
+    assert context.error_occurred is True
+    assert "No se permite una cantidad de pepinos mayor a 100" in context.error_message
+    
+    
+    
