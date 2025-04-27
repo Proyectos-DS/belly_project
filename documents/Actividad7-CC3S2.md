@@ -428,7 +428,7 @@ Escenario añadido a `belly.feature`:
 
 Observamos que el escenario paso la prueba Behave
 
-![[Pasted image 20250423222433.png]]
+<img src="imgs/Pasted image 20250423222433.png" >
 
 
 3. **Considera** también crear pruebas unitarias con Pytest para la lógica de parsing (función que convierte el texto de tiempo en horas decimales).
@@ -468,7 +468,7 @@ def test_step_when_time_description():
 
 Observamos que la prueba se ejecuto correctamente:
 
-![[Pasted image 20250423222954.png]]
+<img src="imgs/Pasted image 20250423222954.png" >
 
 
 4. **En un entorno DevOps**:
@@ -518,7 +518,7 @@ jobs:
 
 El pipeline se ejecuto correctamente (en el segundo intento):
 
-![[Pasted image 20250423224743.png]]
+<img src="imgs/Pasted image 20250423224743.png" >
 
 
 ---
@@ -583,7 +583,7 @@ He agregado dos escenarios para validar que se puede ingerir una cantidad fracci
 
 Vemos que se ejecutaron exitosamente: 
 
-![[Pasted image 20250424153010.png]]
+<img src="imgs/Pasted image 20250424153010.png" >
 
 3. **Valida** que el sistema lance una excepción o error si se ingresa una cantidad negativa de pepinos.
 
@@ -606,7 +606,7 @@ Al agregar este escenario en `belly.feature`
 ```
 
 Vemos que lanza la excepción: 
-![[Pasted image 20250424184328.png]]
+<img src="imgs/Pasted image 20250424184328.png" >
 
 
 4. **Pruebas unitarias**:  
@@ -751,7 +751,7 @@ Estos son los dos escenarios que agregué:
 Podemos observar que se ejecutaron con éxito:
 
 
-![[Pasted image 20250424192943.png]]
+<img src="imgs/Pasted image 20250424192943.png" >
 
 3. **Implementa** una función que convierta las palabras en inglés a valores numéricos (similar a la que se usa para el español).
 
@@ -779,9 +779,9 @@ He agregado etiquetas en cada escenario:
 
 Referencia: [Tutorial 11: Use Tags — behave 1.2.6.1: Examples and Tutorials](https://behave.github.io/behave.example/tutorials/tutorial11.html)
 
-![[Pasted image 20250424223149.png]]
+<img src="imgs/Pasted image 20250424223149.png" >
 
-![[Pasted image 20250424223211.png]]
+<img src="imgs/Pasted image 20250424223211.png" >
 
 
 Y se modifico el archivo `ci.yml` para ejecutar `behave` por tipo de escenario
@@ -860,7 +860,7 @@ Se ha añadido el escenario que contempla ingresar una expresión que describa u
 ```
 
 
-![[Pasted image 20250426111231.png]]
+<img src="imgs/Pasted image 20250426111231.png" >
 
 
 3. **Imprime** (en consola o logs) el tiempo aleatorio elegido para que el resultado sea rastreable en tu pipeline.
@@ -903,7 +903,7 @@ He añadido estas líneas que fijan una semilla para el random, antes de que se 
 
 Al hacer push a mi repo, se ejecuto el pipeline exitosamente. 
 
-![[Pasted image 20250426120452.png]]
+<img src="imgs/Pasted image 20250426120452.png" >
 
 Sin embargo, no pude observar que numero aleatorio arrojo, por lo que edite el archivo `ci.yml` nuevamente:
 
@@ -914,6 +914,7 @@ Sin embargo, no pude observar que numero aleatorio arrojo, por lo que edite el a
         pytest -v --capture=no
 ```
 
+<img src="imgs/Pasted image 20250426121908.png" >
 
 
 ----
@@ -937,6 +938,142 @@ Escenario: Manejar una cantidad no válida de pepinos
   Entonces debería ocurrir un error de cantidad negativa.
 ```
 
+---
+
+1. **Añade** validaciones para evitar que el usuario ingrese < 0 pepinos o > 100 pepinos.
+
+Se ha agregado la validación generando una excepción si se ingresa una cantidad de pepinos fuera del rango $[0, 100]$.
+
+```python
+    def comer(self, pepinos):
+        if pepinos < 0:
+            raise ValueError("No se permite una cantidad negativa de pepinos")
+        if pepinos > 100:
+            raise ValueError("No se permite una cantidad de pepinos mayor a 100")
+        print(f"He comido {pepinos} pepinos.")
+        self.pepinos_comidos += pepinos
+```
+
+
+2. **Modifica** la lógica para arrojar un error (excepción) si la cantidad no es válida.
+
+He modificado el archivo `test_belly.py`
+
+```python
+def test_comer_peninos_fuera_de_rango():
+    """Test que valida que efectivamente no se pueden comer pepinos fuera
+    del rango de [0, 100]. Se espera una excepción de tipo ValueError
+    """
+    belly = Belly()
+    pepinos = -5
+    with pytest.raises(ValueError) as excinfo:
+        belly.comer(pepinos)
+    assert str(excinfo.value) == f"{pepinos} es una cantidad invalida"
+    
+    pepinos = 101
+    with pytest.raises(ValueError) as excinfo:
+        belly.comer(pepinos)
+    assert str(excinfo.value) == f"{pepinos} es una cantidad invalida"
+    
+```
+
+
+Validamos el test para el método modificado (anteriormente era `test_comer_peninos_negativos`)
+	
+<img src="Pasted image 20250427113315.png" >
+
+3. **Implementa** un escenario de prueba que verifique el comportamiento de error.
+
+Si añado este escenario:
+
+```gherkin
+  @english
+  Escenario: Esperar dado que ha comido una cantidad invalida de pepinos
+    Dado que he comido 101 pepinos
+    Cuando espero "1 hour and 40 minutes"
+    Entonces mi estómago debería gruñir
+```
+
+Observo que me sale la excepción:
+
+<img src="Pasted image 20250427114026.png" >
+
+A continuación añadiré los escenarios necesarios
+
+```gherkin
+  @spanish
+  Escenario: Arrojar una excepcion si se ingresa una cantidad negativa de pepinos
+    Dado que he comido -1 pepinos
+    Entonces debería ocurrir un error de cantidad negativa de pepinos
+
+  @spanish
+  Escenario: Arrojar una excepcion si se ingresa una cantidad de pepinos mayor a 100
+    Dado que he comido 101 pepinos
+    Entonces debería ocurrir un error de cantidad mayor a 100
+```
+
+Para lo cual modifico el método `step_given_eaten_cukes`
+
+```python
+# Se cambia el tipo de datos recibido en 'cukes' para que maneje datos de tipo flotantes
+# Usar {cukes:f} me da errores
+@given('que he comido {cukes:g} pepinos')
+def step_given_eaten_cukes(context, cukes):
+    try: # Si se ingresa una cantidad valida
+        context.belly.comer(cukes)
+        context.error_occurred = False
+    except ValueError as err: # Si se ingresa una cantidad invalida
+        context.error_occurred = True
+        context.error_message = str(err)
+```
+
+Y el método `step_when_wait_time_description` :
+```python
+@when('espero {time_description}')
+def step_when_wait_time_description(context, time_description):
+    time_description = time_description.strip('"').lower()
+    if time_description.startswith('entre'):
+        try:
+            random_hour = obtener_tiempo_aleatorio(time_description)
+            context.belly.esperar(random_hour)
+        except ValueError as err:
+            print(err)
+    else: 
+        # Agregamos un espacio antes de 'y' para que no capture palabas como 'thirty'
+        # Y añadimos la conversión de 'and' a vacío
+        time_description = time_description.replace(' y', ' ').replace('and', ' ')
+        time_description = time_description.strip()
+
+        # Manejar casos especiales como 'media hora'
+        if time_description == 'media hora':
+            total_time_in_hours = 0.5
+        else:
+            # Mejoramos la expresion regular para que contemple palabras en ingles
+            pattern = re.compile(r'(?:(\w+)\s*(?:horas?|hours?))?\s*(?:(\w+)\s*(?:minutos?|minutes?)?)?\s*(?:(\w+)\s*(?:segundos?|seconds?)?)?')
+            match = pattern.match(time_description)
+
+            if match:
+                hours_word = match.group(1) or "0"
+                minutes_word = match.group(2) or "0" 
+                seconds_word = match.group(3) or "0" # Agregamos el caso para segundos
+
+                hours = convertir_palabra_a_numero(hours_word)
+                minutes = convertir_palabra_a_numero(minutes_word)
+                seconds = convertir_palabra_a_numero(seconds_word) # Obtenemos el valor numerico de los segundos
+
+                total_time_in_hours = hours + (minutes / 60) + (seconds / 3600) # Añadimos el calculo de segundos
+                    
+            else:
+                raise ValueError(f"No se pudo interpretar la descripción del tiempo: {time_description}")
+        context.belly.esperar(total_time_in_hours)
+```
+
+Para poder capturar correctamente las excepciones cuando se ingresa una cantidad invalida
+
+4. **En tu pipeline**, verifica que la excepción se maneje y el test falle de manera controlada si el sistema no lanza la excepción esperada.
+
+
+---
 
 #### Ejercicio 6: **Escalabilidad con grandes cantidades de pepinos**
 
