@@ -17,13 +17,19 @@ def test_comer_pepinos_fraccionarios():
     assert belly.pepinos_comidos == 1.5
 
 
-def test_comer_peninos_negativos():
-    """Test que valida que efectivamente no se pueden comer pepinos negativos.
-    Se espera una excepción de tipo ValueError
+def test_comer_peninos_fuera_de_rango():
+    """Test que valida que efectivamente no se pueden comer pepinos fuera
+    del rango de [0, 100]. Se espera una excepción de tipo ValueError
     """
     belly = Belly()
+    pepinos = -5
     with pytest.raises(ValueError) as excinfo:
-        belly.comer(-5)
-    assert str(excinfo.value) == "Cantidad de pepinos invalida. No se permiten pepinos negativos."
+        belly.comer(pepinos)
+    assert str(excinfo.value) == "No se permite una cantidad negativa de pepinos"
+    
+    pepinos = 101
+    with pytest.raises(ValueError) as excinfo:
+        belly.comer(pepinos)
+    assert str(excinfo.value) == "No se permite una cantidad de pepinos mayor a 100"
     
 
