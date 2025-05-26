@@ -980,7 +980,7 @@ def test_comer_peninos_fuera_de_rango():
 
 Validamos el test para el método modificado (anteriormente era `test_comer_peninos_negativos`)
 	
-<img src="Pasted image 20250427113315.png" >
+<img src="imgs/Pasted image 20250427113315.png" >
 
 3. **Implementa** un escenario de prueba que verifique el comportamiento de error.
 
@@ -996,7 +996,7 @@ Si añado este escenario:
 
 Observo que me sale la excepción:
 
-<img src="Pasted image 20250427114026.png" >
+<img src="imgs/Pasted image 20250427114026.png" >
 
 A continuación añadiré los escenarios necesarios (el escenario anterior se eliminará)
 
@@ -1072,6 +1072,11 @@ Para poder capturar correctamente las excepciones cuando se ingresa una cantidad
 
 4. **En tu pipeline**, verifica que la excepción se maneje y el test falle de manera controlada si el sistema no lanza la excepción esperada.
 
+Después de un pequeño error el pipeline se ejecuto sin problemas:
+
+<img src="imgs/Pasted image 20250427120648.png" >
+
+
 
 ---
 
@@ -1096,6 +1101,27 @@ Escenario: Comer 1000 pepinos y esperar 10 horas
   Entonces mi estómago debería gruñir
 ```
 
+
+----
+1. **Añade** soporte para manejar cantidades de pepinos como 1000 (más allá del límite de validación anterior, o ajusta ese límite para pruebas internas).
+
+
+
+2. **Implementa** un escenario en Gherkin para comer 1000 pepinos y esperar 10 horas.
+
+
+
+3. **Verifica** que el sistema sigue comportándose correctamente (sin timeouts ni errores de rendimiento).
+
+
+
+4. **En un pipeline DevOps**:
+   - Ejecuta pruebas de estrés o de larga duración (puedes simular) para garantizar la robustez.
+   - Mide el tiempo de ejecución para asegurarte de que no aumente drásticamente.
+
+
+
+----
 
 #### Ejercicio 7: **Descripciones de tiempo complejas**
 
