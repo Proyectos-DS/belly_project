@@ -1700,6 +1700,171 @@ Escenario: Verificar que el estómago gruñe tras comer suficientes pepinos y es
 ```
 
 
+---
+
+1. **Elige** una funcionalidad ya existente (por ejemplo, `esta_gruñendo()`).
+
+Para la refactorización y legibilidad, he eliminado comentarios sobrantes, y simplificado el método `esta_gruñendo`. Además he añadido documentación con docstrings a la clase `Belly`.
+
+```python
+class Belly:
+    """
+    - reset(): Reinicia la panza (pepinos y tiempo).
+    - comer(pepinos): Registra pepinos comidos (debe ser >= 0).
+    - esperar(tiempo_en_horas): Aumenta el tiempo de espera.
+    - esta_gruñendo(): Devuelve True si está gruñendo.
+    """
+    def __init__(self):
+        self.pepinos_comidos = 0
+        self.tiempo_esperado = 0
+
+    def reset(self):
+        self.pepinos_comidos = 0
+        self.tiempo_esperado = 0
+
+    def comer(self, pepinos):
+        if pepinos < 0:
+            raise ValueError("No se permite una cantidad negativa de pepinos")
+        self.pepinos_comidos += pepinos
+
+    def esperar(self, tiempo_en_horas):
+        if tiempo_en_horas > 0:
+            self.tiempo_esperado += tiempo_en_horas
+
+    def esta_gruñendo(self): # He simplificado este método
+        return self.tiempo_esperado >= 1.5 and self.pepinos_comidos > 10
+```
+
+
+2. **Escribe** (o asegura que existen) pruebas unitarias que cubran los casos clave.  
+
+Aun mejor, quiero que toda mi clase `Belly` este cubierta, sin embargo al momento tengo:
+
+```sh
+(.venv) dirac@ubuntu:~/Documents/DS/Actividad7/belly_project$ pytest --cov=src --cov-report=term-missing
+================================================ test session starts ================================================
+platform linux -- Python 3.12.3, pytest-8.4.0, pluggy-1.6.0
+rootdir: /home/dirac/Documents/DS/Actividad7/belly_project
+plugins: cov-6.2.1
+collected 10 items                                                                                                  
+
+tests/test_belly.py ........                                                                                  [ 80%]
+tests/test_belly_steps.py ..                                                                                  [100%]
+
+================================================== tests coverage ===================================================
+__________________________________ coverage: platform linux, python 3.12.3-final-0 __________________________________
+
+Name              Stmts   Miss  Cover   Missing
+-----------------------------------------------
+src/__init__.py       0      0   100%
+src/belly.py         16      3    81%   13-14, 18
+-----------------------------------------------
+TOTAL                16      3    81%
+================================================ 10 passed in 0.14s =================================================
+(.venv) dirac@ubuntu:~/Documents/DS/Actividad7/belly_project$ 
+```
+
+
+Procedí a implementar dos pruebas unitarias, una para el método `reset` y otra para validar que se levante una excepción cuando se ingresa una cantidad negativa de pepinillos en el método `comer`.
+
+```python
+@pytest.mark.parametrize(
+        "pepinos, tiempo_horas",
+        [
+            (5, .5),
+            (20, 4.55),
+            (9, .45)
+        ]
+)
+def test_reset(pepinos, tiempo_horas):
+    # Arrange
+    belly = Belly()
+    belly.comer(pepinos)
+    belly.esperar(tiempo_horas)
+    
+    # Act
+    belly.reset()
+    pepinos_comidos = belly.pepinos_comidos
+    tiempo_esperado = belly.tiempo_esperado
+    
+    # Assert
+    assert pepinos_comidos == 0, f"Fallo al hacer reset, pepinos_comidos: {pepinos_comidos}"
+    assert tiempo_esperado == 0, f"Fallo al hacer reset, tiempo_esperado: {tiempo_esperado}" 
+
+
+
+@pytest.mark.parametrize(
+        "pepinos_negativos",
+        [(-1), (-5), (-40), (-49.5)]
+)
+def test_ingerir_cantidad_negativa_pepinos(pepinos_negativos):
+    
+    # Arrange
+    belly = Belly()
+    
+    # Act
+    with pytest.raises(ValueError) as e:
+        belly.comer(pepinos_negativos)
+    
+    # Assert
+    assert str(e.value) == "No se permite una cantidad negativa de pepinos"
+```
+
+Con ello, ahora toda mi clase `Belly` esta cubierta de pruebas unitarias.
+
+```sh
+(.venv) dirac@ubuntu:~/Documents/DS/Actividad7/belly_project$ pytest --cov=src --cov-report=term-missing
+===================================================== test session starts ======================================================
+platform linux -- Python 3.12.3, pytest-8.4.0, pluggy-1.6.0
+rootdir: /home/dirac/Documents/DS/Actividad7/belly_project
+plugins: cov-6.2.1
+collected 17 items                                                                                                             
+
+tests/test_belly.py ...............                                                                                      [ 88%]
+tests/test_belly_steps.py ..                                                                                             [100%]
+
+======================================================== tests coverage ========================================================
+_______________________________________ coverage: platform linux, python 3.12.3-final-0 ________________________________________
+
+Name              Stmts   Miss  Cover   Missing
+-----------------------------------------------
+src/__init__.py       0      0   100%
+src/belly.py         16      0   100%
+-----------------------------------------------
+TOTAL                16      0   100%
+====================================================== 17 passed in 0.15s ======================================================
+(.venv) dirac@ubuntu:~/Documents/DS/Actividad7/belly_project$ 
+```
+
+
+3. **Refactoriza** el código (`Belly` o funciones auxiliares) para mejorar eficiencia, legibilidad o reducir duplicación.
+
+**Ya se realizó en el punto 1**
+
+4. **Valida** que todas las pruebas unitarias y escenarios BDD siguen pasando sin cambios.
+
+Las pruebas BDD siguen ejecutándose con éxito
+
+5. **En un pipeline**:
+   - Activa la medición de **coverage** para asegurarte de que la refactorización no rompa funcionalidades no cubiertas.
+
+Para ello se modifico `ci.yml`:
+
+```yaml
+    - name: Run Pytest Coverage
+      run: | # Se añadió --cov-report...
+        source venv/bin/activate
+        pytest --cov=src --cov-report=term-missing
+```
+
+>[!tip] Cobertura de pruebas al 100%
+>https://github.com/Proyectos-DS/belly_project/actions/runs/16012433185/job/45172709006
+
+
+---
+
+
+
 #### Ejercicio 12: **Ciclo completo de TDD a BDD – Añadir nueva funcionalidad**
 
 **Objetivo**  
