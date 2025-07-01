@@ -123,5 +123,9 @@ def step_then_total_hours_equal(context, total_horas):
     horas_esperadas = context.belly.tiempo_esperado
     assert horas_esperadas == total_horas, f"Total horas no coincide. {horas_esperadas} <> {total_horas}"
     
+@then('debería haber comido {pepinos_ingeridos:d} pepinos')
+def step_then_validar_pepinos_comidos(context, pepinos_ingeridos):
+    pepinos_comidos = context.belly.pepinos_comidos
+    assert pepinos_ingeridos == pepinos_comidos, "Pepinos ingeridos y pepinos comidos (atributo) no coinciden"
     
     

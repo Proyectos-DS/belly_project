@@ -1499,6 +1499,93 @@ Escenario: Comer pocos pepinos y no esperar suficiente tiempo
   Entonces mi estómago no debería gruñir
 ```
 
+---
+
+
+1. **Toma** la historia de usuario:  
+   > "Como usuario que ha comido pepinos, quiero saber si mi estómago va a gruñir después de esperar un tiempo suficiente, para poder tomar una acción."
+
+
+Definí el siguiente Issue en Github:
+
+```markdown
+## Historia de usuario
+*Como* usuario que he comido pepinos
+*Necesito* saber si mi estómago va a gruñir después de esperar un tiempo suficiente
+*Para* poder tomar una acción
+
+---
+
+### Suposiciones
+- Se debe haber ingerido más de 10 pepinillos.
+- Se debe haber esperado al menos 1 hora con 30 minutos.
+
+---
+ 
+### Criterios de aceptación
+
+- [ ] Si se cumplen ambas suposiciones, el estomago debería gruñir 
+- [ ] Si no se cumple al menos una de las suposiciones, el estómago no debería gruñir
+```
+
+
+2. **Identifica** los criterios de aceptación (por ejemplo, cuántos pepinos y cuánto tiempo se debe esperar).
+
+
+3. **Escribe** escenarios Gherkin que reflejen esos criterios.
+
+Añadí los escenarios a `belly.feature`
+
+```gherkin
+Escenario: Comer suficientes pepinos y esperar el tiempo adecuado
+  Dado que he comido 20 pepinos
+  Cuando espero 2 horas
+  Entonces mi estómago debería gruñir
+
+Escenario: Comer pocos pepinos y no esperar suficiente tiempo
+  Dado que he comido 5 pepinos
+  Cuando espero 1 hora
+  Entonces mi estómago no debería gruñir
+```
+
+
+4. **Implementa** los pasos en Behave.
+
+No fue necesario implementar pasos. Al ejecutar `beahve` obtuve: 
+
+```sh
+  Escenario: Comer suficientes pepinos y esperar el tiempo adecuado  # features/belly.feature:115
+    Dado que he comido 20 pepinos                                    # features/steps/belly_steps.py:55 0.000s
+    Cuando espero 2 horas                                            # features/steps/belly_steps.py:64 0.000s
+    Entonces mi estómago debería gruñir                              # features/steps/belly_steps.py:102 0.000s
+
+  Escenario: Comer pocos pepinos y no esperar suficiente tiempo  # features/belly.feature:120
+    Dado que he comido 5 pepinos                                 # features/steps/belly_steps.py:55 0.000s
+    Cuando espero 1 hora                                         # features/steps/belly_steps.py:64 0.000s
+    Entonces mi estómago no debería gruñir                       # features/steps/belly_steps.py:106 0.000s
+
+1 feature passed, 0 failed, 0 skipped
+20 scenarios passed, 0 failed, 0 skipped
+58 steps pass
+```
+
+
+5. **En un pipeline**:
+   - Asegúrate de vincular (por ejemplo, en GitLab Issues o GitHub Issues) los escenarios con la historia de usuario para tener *traceability* (rastreabilidad).
+
+Se ejecutaron los comandos:
+
+```sh
+$ git commit -m "Se añaden cambios para completar Ej 9 - Closes #5"
+$ git push -u origin main
+```
+
+>[!tip] Con ello se cerró satisfactoriamente el Issue:
+>https://github.com/Proyectos-DS/belly_project/issues/5
+
+
+---
+
 #### Ejercicio 10: **Escribir pruebas unitarias antes de escenarios BDD**
 
 **Objetivo**  
@@ -1526,6 +1613,60 @@ Escenario: Saber cuántos pepinos he comido
   Dado que he comido 15 pepinos
   Entonces debería haber comido 15 pepinos
 ```
+
+
+---
+
+1. **Escribe** un test unitario para una nueva función, por ejemplo, `pepinos_comidos()`, que retorna el total de pepinos ingeridos.
+
+
+Se añadió la siguiente prueba unitaria:
+
+```python
+@pytest.mark.parametrize(
+        "pepinos_ingeridos",
+        [(2), (40), (15) ]
+)
+def test_pepinos_comidos(pepinos_ingeridos):
+    # Arrange
+    belly = Belly()
+
+    # Act
+    belly.comer(pepinos_ingeridos)
+
+    # Assert
+    assert belly.pepinos_comidos == pepinos_ingeridos, f"Pepinos ingeridos y pepinos comidos (atributo) no coinciden"
+```
+
+2. **Crea** un escenario Gherkin que describe este comportamiento desde el punto de vista del usuario.
+
+Se añadió el Escenario:
+
+```gherkin
+  Escenario: Saber cuántos pepinos he comido
+    Dado que he comido 15 pepinos
+    Entonces debería haber comido 15 pepinos
+```
+
+3. **Implementa** los pasos en Behave y verifica que pase la misma validación.
+
+Se implementó el paso:
+
+```python
+@then('debería haber comido {pepinos_ingeridos:d} pepinos')
+def step_then_validar_pepinos_comidos(context, pepinos_ingeridos):
+    pepinos_comidos = context.belly.pepinos_comidos
+    assert pepinos_ingeridos == pepinos_comidos, "Pepinos ingeridos y pepinos comidos (atributo) no coinciden"
+```
+
+Al ejecutar `behave` el escenario paso con éxito
+
+
+4. **En un pipeline**:  
+   - Ejecución secuencial: 1) Pytest, 2) Behave.  **Ya se implementó en el ejercicio anterior**
+   - O en etapas separadas para un mejor feedback.
+
+---
 
 
 #### Ejercicio 11: **Refactorización guiada por TDD y BDD**
