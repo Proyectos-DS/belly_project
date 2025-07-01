@@ -10,3 +10,6 @@ prueba.py
 # Obsidian
 documents/.obsidian/
 .obsidian/
+
+# Entorno
+.venv

@@ -43,3 +43,8 @@ jobs:
       run: |
         source venv/bin/activate
         pytest -v --capture=no
+
+    - name: Run Pytest Coverage
+      run: |
+        source venv/bin/activate
+        pytest --cov

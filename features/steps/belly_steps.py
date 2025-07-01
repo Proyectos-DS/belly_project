@@ -73,7 +73,7 @@ def step_when_wait_time_description(context, time_description):
     else: 
         # Agregamos un espacio antes de 'y' para que no capture palabas como 'thirty'
         # Y añadimos la conversión de 'and' a vacío
-        time_description = time_description.replace(' y', ' ').replace('and', ' ')
+        time_description = time_description.replace(' y', ' ').replace('and', ' ').replace(',', ' ')
         time_description = time_description.strip()
 
         # Manejar casos especiales como 'media hora'
@@ -116,6 +116,12 @@ def step_then_invalid_amount_cukes_negative(context):
 def step_then_invalid_amount_cukes_negative(context):
     assert context.error_occurred is True
     assert "No se permite una cantidad de pepinos mayor a 100" in context.error_message
+
+
+@then('la cantidad total en horas debe ser {total_horas:g}')
+def step_then_total_hours_equal(context, total_horas):
+    horas_esperadas = context.belly.tiempo_esperado
+    assert horas_esperadas == total_horas, f"Total horas no coincide. {horas_esperadas} <> {total_horas}"
     
     
     
