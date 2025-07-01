@@ -32,3 +32,26 @@ def test_comer_pepinos_fraccionarios():
 #         belly.comer(pepinos)
 #     assert str(excinfo.value) == "No se permite una cantidad de pepinos mayor a 100"
 
+@pytest.mark.parametrize(
+        "pepinos, horas, grune",
+        [
+            (15, 3, True),
+            (12, 5, True),
+            (9, 20, False),
+            (20, 1, False)
+        ]
+)
+def test_grunir_si_comido_muchos_pepinos(pepinos, horas, grune):
+    """
+    Valida si se ha comido más de 10 pepinos y se espera más de dos horas, 
+    entonces el estómago gruñe
+    """
+    # Arrange
+    belly = Belly()
+
+    # Act
+    belly.comer(pepinos)
+    belly.esperar(horas)
+
+    # Assert
+    assert belly.esta_gruñendo() == grune

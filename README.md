@@ -1103,25 +1103,68 @@ Escenario: Comer 1000 pepinos y esperar 10 horas
 
 
 ----
+
 1. **Añade** soporte para manejar cantidades de pepinos como 1000 (más allá del límite de validación anterior, o ajusta ese límite para pruebas internas).
 
+Para añadir el soporte, se modificó el método `comer`
 
+```python
+    def comer(self, pepinos):
+        if pepinos < 0:
+            raise ValueError("No se permite una cantidad negativa de pepinos")
+        #if pepinos > 100:
+        #    raise ValueError("No se permite una cantidad de pepinos mayor a 100")
+        print(f"He comido {pepinos} pepinos.")
+        self.pepinos_comidos += pepinos
 
+```
+
+  
 2. **Implementa** un escenario en Gherkin para comer 1000 pepinos y esperar 10 horas.
 
+  Se añadió un tag `limites` para ejecutar ese step en particular.
+```gherkin
+  @limites
+  Escenario: Comer una cantidad grande de pepinos y esperar largo tiempo
+    Dado que he comido 2000 pepinos
+    Cuando espero 15 horas
+    Entonces mi estómago debería gruñir
+```
 
+```sh
+$ behave --tags=@limites
+
+# ...
+  @limites
+  Escenario: Comer una cantidad grande de pepinos y esperar largo tiempo  # features/belly.feature:83
+    Dado que he comido 2000 pepinos                                       # features/steps/belly_steps.py:55 0.000s
+    Cuando espero 15 horas                                                # features/steps/belly_steps.py:64 0.001s
+    Entonces mi estómago debería gruñir                                   # features/steps/belly_steps.py:102 0.000s
+
+1 feature passed, 0 failed, 0 skipped
+1 scenario passed, 0 failed, 12 skipped
+3 steps passed, 0 failed, 35 skipped, 0 undefined
+Took 0m0.001s
+```
+  
 
 3. **Verifica** que el sistema sigue comportándose correctamente (sin timeouts ni errores de rendimiento).
 
-
+  
+  
+  
 
 4. **En un pipeline DevOps**:
-   - Ejecuta pruebas de estrés o de larga duración (puedes simular) para garantizar la robustez.
-   - Mide el tiempo de ejecución para asegurarte de que no aumente drásticamente.
+
+- Ejecuta pruebas de estrés o de larga duración (puedes simular) para garantizar la robustez.
+
+- Mide el tiempo de ejecución para asegurarte de que no aumente drásticamente.
 
 
+>[!warning] Sin resolver por ahora
 
-----
+
+---
 
 #### Ejercicio 7: **Descripciones de tiempo complejas**
 
@@ -1142,6 +1185,141 @@ Escenario: Manejar tiempos complejos
   Cuando espero "1 hora, 30 minutos y 45 segundos"
   Entonces mi estómago debería gruñir
 ```
+
+
+---
+
+1. **Refuerza** la expresión regular y parsing para que soporte múltiples separadores (comas, "y", espacios, etc.).
+
+En `belly_steps.py` solo modifiqué el método `def step_when_wait_time_description()`
+
+Añadí un `replace(',', ' ')`
+
+```python
+@when('espero {time_description}')
+def step_when_wait_time_description(context, time_description):
+    time_description = time_description.strip('"').lower()
+    if time_description.startswith('entre'):
+	    # ...
+    else: 
+        # Agregamos un espacio antes de 'y' para que no capture palabas como 'thirty'
+        # Y añadimos la conversión de 'and' a vacío
+        time_description = time_description.replace(' y', ' ').replace('and', ' ').replace(',', ' ') # Modifiqué aquí
+        time_description = time_description.strip()
+```
+
+
+2. **Implementa** escenarios que cubran al menos 2-3 variaciones complejas en Gherkin.
+
+```gherkin
+  @spanish
+  Escenario: Manejar tiempos complejos en español
+    Dado que he comido 50 pepinos
+    Cuando espero "1 hora, 30 minutos y 45 segundos"
+    Entonces mi estómago debería gruñir
+
+
+  @english
+  Escenario: Manejar tiempos complejos en ingles
+    Dado que he comido 5 pepinos
+    Cuando espero "One hour, 20 minutes , 45 seconds"
+    Entonces mi estómago no debería gruñir
+
+  @spanish
+  Escenario: Manejar tiempos complejos minutos y segundos
+    Dado que he comido 500 pepinos
+    Cuando espero "Cuarenta minutos, 38 segundos"
+    Entonces mi estómago no debería gruñir
+```
+
+
+Al ejecutar las pruebas:
+
+```sh
+$ behave
+...
+...
+...
+  @spanish
+  Escenario: Manejar tiempos complejos en español    # features/belly.feature:89
+    Dado que he comido 50 pepinos                    # features/steps/belly_steps.py:55 0.000s
+    Cuando espero "1 hora, 30 minutos y 45 segundos" # features/steps/belly_steps.py:64 0.000s
+    Entonces mi estómago debería gruñir              # features/steps/belly_steps.py:102 0.000s
+
+  @english
+  Escenario: Manejar tiempos complejos en ingles      # features/belly.feature:96
+    Dado que he comido 5 pepinos                      # features/steps/belly_steps.py:55 0.000s
+    Cuando espero "One hour, 20 minutes , 45 seconds" # features/steps/belly_steps.py:64 0.000s
+    Entonces mi estómago no debería gruñir            # features/steps/belly_steps.py:106 0.000s
+
+  @spanish
+  Escenario: Manejar tiempos complejos minutos y segundos  # features/belly.feature:102
+    Dado que he comido 500 pepinos                         # features/steps/belly_steps.py:55 0.000s
+    Cuando espero "Cuarenta minutos, 38 segundos"          # features/steps/belly_steps.py:64 0.000s
+    Entonces mi estómago no debería gruñir                 # features/steps/belly_steps.py:106 0.000s
+
+1 feature passed, 0 failed, 0 skipped
+16 scenarios passed, 0 failed, 0 skipped
+47 steps passed, 0 failed, 0 skipped, 0 undefined
+Took 0m0.009s
+```
+
+3. **Valida** que el total en horas sea exacto (suma de horas, minutos, segundos).
+
+Para ello incluí este escenario:
+
+```gherkin
+  @valida-horas
+  Escenario: Total horas debe ser igual a suma de horas, minutos y segundos
+    Cuando espero "2 horas, 40 minutos y 30 segundos"
+    Entonces la cantidad total en horas debe ser 2.675
+```
+
+
+Y agregue este método en `belly_steps`:
+
+```python
+@then('la cantidad total en horas debe ser {total_horas:g}')
+def step_then_total_hours_equal(context, total_horas):
+    horas_esperadas = context.belly.tiempo_esperado
+    assert horas_esperadas == total_horas, f"Total horas no coincide. {horas_esperadas} <> {total_horas}"
+```
+
+
+Probando: 
+```sh
+$ behave
+...
+  @valida-horas
+  Escenario: Total horas debe ser igual a suma de horas, minutos y segundos  # features/belly.feature:109
+    Cuando espero "2 horas, 40 minutos y 30 segundos"                        # features/steps/belly_steps.py:64 0.000s
+    Entonces la cantidad total en horas debe ser 2.675                       # features/steps/belly_steps.py:121 0.000s
+
+1 feature passed, 0 failed, 0 skipped
+17 scenarios passed, 0 failed, 0 skipped
+49 steps passed, 0 failed, 0 skipped, 0 undefined
+Took 0m0.004s
+```
+
+
+4. **En un pipeline**:  
+   - Puedes analizar la cobertura de pruebas (coverage) para asegurarte de que la nueva lógica de parsing está completamente testeada.
+
+Para ello añadí estas instrucciones en el `ci.yml`
+
+
+```yaml
+    - name: Run Pytest Coverage
+      run: |
+        source venv/bin/activate
+        pytest --cov
+```
+
+<img src="documents/imgs/Ej7.jpeg" >
+
+
+---
+
 
 #### Ejercicio 8: **De TDD a BDD – Convertir requisitos técnicos a pruebas en Gherkin**
 
@@ -1172,6 +1350,127 @@ Escenario: Comer muchos pepinos y esperar el tiempo suficiente
   Cuando espero 2 horas
   Entonces mi estómago debería gruñir
 ```
+
+
+---
+
+1. **Escribe** un test unitario básico con Pytest que valide que si se han comido más de 10 pepinos y se espera 2 horas, el estómago gruñe.
+
+
+Añadí `parametrize`:
+
+```python
+def test_grunir_si_comido_muchos_pepinos(pepinos, horas, grune):
+    """
+    Valida si se ha comido más de 10 pepinos y se espera más de dos horas, 
+    entonces el estómago gruñe
+    """
+    # Arrange
+    belly = Belly()
+
+    # Act
+    belly.comer(pepinos)
+    belly.esperar(horas)
+
+    # Assert
+    assert belly.esta_gruñendo() == grune
+```
+
+
+
+2. **Convierte** ese test unitario en un escenario Gherkin, con la misma lógica, pero más orientado al usuario.
+
+Añadí un nuevo feature:
+
+```gherkin
+  Escenario: Comer muchos pepinos y esperar el tiempo suficiente
+    Dado que he comido 15 pepinos
+    Cuando espero 2 horas
+    Entonces mi estómago debería gruñir
+```
+
+3. **Implementa** los pasos en Behave (si no existen).
+
+**No fue necesario**
+
+No tuve que añadir o modificar nada en `belly_steps.py`
+
+Al ejecutar el comando `behave`:
+
+```sh
+  Escenario: Comer muchos pepinos y esperar el tiempo suficiente  # features/belly.feature:114
+    Dado que he comido 15 pepinos                                 # features/steps/belly_steps.py:55 0.000s
+    Cuando espero 2 horas                                         # features/steps/belly_steps.py:64 0.000s
+    Entonces mi estómago debería gruñir                           # features/steps/belly_steps.py:102 0.000s
+
+1 feature passed, 0 failed, 0 skipped
+18 scenarios passed, 0 failed, 0 skipped
+52 steps passed, 0 failed, 0 skipped, 0 undefined
+Took 0m0.004s
+```
+
+
+4. **En un pipeline DevOps**:
+   - Ejecuta primero los tests unitarios (rápidos) y luego los tests de Behave (que pueden ser más lentos y de nivel de integración).
+
+He modificado el `ci.yaml` para alterar el orden de ejecución. Primero se ejecutarán las pruebas unitarias y luego se ejecutarán las pruebas BDD.
+
+```yaml
+name: Ejecutar Pruebas
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+      name: Checkout repository
+
+    - name: Set up Python 3.x
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.x'
+
+    - name: Install dependencies
+      run: |
+        python -m venv venv
+        source venv/bin/activate
+        pip install -r requirements.txt
+
+    - name: Set random seed to avoid flakiness
+      run: |
+        python -c "import random; random.seed(28)"
+
+    - name: Run Pytest Unit Tests # Esto primero
+      run: |
+        source venv/bin/activate
+        pytest -v --capture=no
+
+    - name: Run Pytest Coverage
+      run: |
+        source venv/bin/activate
+        pytest --cov
+        
+    - name: Run Behave Tests Spanish # Esto segundo
+      run: |
+        source venv/bin/activate
+        behave --tags=@spanish
+
+    - name: Run Behave Tests English
+      run: |
+        source venv/bin/activate
+        behave --tags=@english
+```
+
+
+---
+
 
 #### Ejercicio 9: **Identificación de criterios de aceptación para historias de usuario**
 

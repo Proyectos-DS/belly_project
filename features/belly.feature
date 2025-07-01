@@ -109,3 +109,9 @@ Característica: Característica del estómago
   Escenario: Total horas debe ser igual a suma de horas, minutos y segundos
     Cuando espero "2 horas, 40 minutos y 30 segundos"
     Entonces la cantidad total en horas debe ser 2.675
+
+
+  Escenario: Comer muchos pepinos y esperar el tiempo suficiente
+    Dado que he comido 15 pepinos
+    Cuando espero 2 horas
+    Entonces mi estómago debería gruñir
