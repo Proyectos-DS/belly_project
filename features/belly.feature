@@ -62,7 +62,6 @@ Característica: Característica del estómago
     Cuando espero "90 minutes and 50 seconds"
     Entonces mi estómago debería gruñir
 
-
   @spanish
   Escenario: Esperar usando un tiempo aleatorio
     Dado que he comido 12.5 pepinos
@@ -91,7 +90,6 @@ Característica: Característica del estómago
     Cuando espero "1 hora, 30 minutos y 45 segundos"
     Entonces mi estómago debería gruñir
 
-
   @english
   Escenario: Manejar tiempos complejos en ingles
     Dado que he comido 5 pepinos
@@ -104,14 +102,22 @@ Característica: Característica del estómago
     Cuando espero "Cuarenta minutos, 38 segundos"
     Entonces mi estómago no debería gruñir
 
-
   @valida-horas
   Escenario: Total horas debe ser igual a suma de horas, minutos y segundos
     Cuando espero "2 horas, 40 minutos y 30 segundos"
     Entonces la cantidad total en horas debe ser 2.675
 
-
   Escenario: Comer muchos pepinos y esperar el tiempo suficiente
     Dado que he comido 15 pepinos
     Cuando espero 2 horas
     Entonces mi estómago debería gruñir
+
+  Escenario: Comer suficientes pepinos y esperar el tiempo adecuado
+    Dado que he comido 20 pepinos
+    Cuando espero 2 horas
+    Entonces mi estómago debería gruñir
+
+  Escenario: Comer pocos pepinos y no esperar suficiente tiempo
+    Dado que he comido 5 pepinos
+    Cuando espero 1 hora
+    Entonces mi estómago no debería gruñir
